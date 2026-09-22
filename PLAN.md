@@ -287,42 +287,42 @@ I also need `ANTHROPIC_API_KEY` in the environment (or an `ant auth login` profi
 - [x] **Gate: pricing tests green**
 
 ### Phase 2 — Synthetic data and seed
-- [ ] `GroundTruth` schema plus controlled variation generator
-- [ ] `scripts/generate_dataset.py` (label-first rendering); ~180 cases and ~40 customers
-- [ ] Hand-author ~15 adversarial cases
-- [ ] Commit fixtures; `scripts/seed.py` loads a coherent demo DB state
-- [ ] **Gate: `make seed` produces a browsable demo state**
+- [x] `GroundTruth` schema plus controlled variation generator
+- [~] `scripts/generate_dataset.py` — written and dry-run verified; the 180 **ground truths** and 40 customers are committed fixtures, but the LLM-rendered **email bodies are not generated** (needs ANTHROPIC_API_KEY)
+- [x] Hand-author ~15 adversarial cases
+- [x] Commit fixtures; `scripts/seed.py` loads a coherent demo DB state
+- [x] **Gate: `make seed` produces a browsable demo state** (catalog, rules, customers, and the 15 adversarial requests load; the 180 generated requests await rendering)
 
 ### Phase 3 — LLM layer, tracing, agent
-- [ ] `LLMClient` protocol; `AnthropicClient` (structured outputs, `strict: true`, streaming, retries, typed error chain); `FakeLLMClient`
-- [ ] Tracer plus cost table; `AgentRun`/`TraceStep` persistence
-- [ ] Tools: parse → match → catalog → propose → compute → draft → submit/route
-- [ ] `guardrails.py` and `test_guardrails.py` (no send without approval, adversarial routing, confidence flagging, invented-price rejection)
-- [ ] Orchestrator loop
-- [ ] `test_pipeline.py` — golden path against a fixed fixture with `FakeLLMClient`, fully deterministic and free
-- [ ] **Gate: golden path runs end to end on seeded data; guardrail tests green**
+- [x] `LLMClient` protocol; `AnthropicClient` (structured outputs, `strict: true`, streaming, retries, typed error chain); `FakeLLMClient`
+- [x] Tracer plus cost table; `AgentRun`/`TraceStep` persistence
+- [x] Tools: parse → match → catalog → propose → compute → draft → submit/route
+- [x] `guardrails.py` and `test_guardrails.py` (no send without approval, adversarial routing, confidence flagging, invented-price rejection)
+- [x] Orchestrator loop
+- [x] `test_pipeline.py` — golden path against a fixed fixture with `FakeLLMClient`, fully deterministic and free
+- [x] **Gate: golden path runs end to end on seeded data; guardrail tests green**
 
 ### Phase 4 — API surface and type generation
-- [ ] Routers for job requests, quotes, approvals (approve/edit/reject), runs/traces, evals, catalog, customers
-- [ ] `send_quote` reachable only via the approval endpoint, with the guard re-checked
-- [ ] `test_api.py`, including an explicit "attempt to send without approval returns 409" test
-- [ ] `make types` → `openapi-typescript` → `packages/api-types`; drift-check target
-- [ ] **Gate: the full loop is drivable over HTTP; types generate clean**
+- [x] Routers for job requests, quotes, approvals (approve/edit/reject), runs/traces, evals, catalog, customers
+- [x] `send_quote` reachable only via the approval endpoint, with the guard re-checked
+- [x] `test_api.py`, including an explicit "attempt to send without approval returns 409" test
+- [x] `make types` → `openapi-typescript` → `packages/api-types`; drift-check target
+- [x] **Gate: the full loop is drivable over HTTP; types generate clean**
 
 ### Phase 5 — Frontend
-- [ ] App shell, nav, typed API client, loading/empty/error states
-- [ ] **Inbox / Runs** — request list, pipeline status, confidence and new-customer badges
-- [ ] **Approval Queue** — raw email ↔ parsed fields ↔ itemized quote ↔ drafted email side by side; flags surfaced; Approve / Edit (re-prices live) / Reject with notes. This screen gets the most design effort.
-- [ ] **Trace Viewer** — run list plus step waterfall, expandable I/O, tokens/latency/cost per step and per run
-- [ ] **Eval Dashboard** — metrics table with threshold pass/fail, per-field extraction bar chart, cost and latency distribution
-- [ ] **Gate: all four screens functional against the real API**
+- [x] App shell, nav, typed API client, loading/empty/error states
+- [x] **Inbox / Runs** — request list, pipeline status, confidence and new-customer badges
+- [x] **Approval Queue** — raw email ↔ parsed fields ↔ itemized quote ↔ drafted email side by side; flags surfaced; Approve / Edit (re-prices live) / Reject with notes. This screen gets the most design effort.
+- [x] **Trace Viewer** — run list plus step waterfall, expandable I/O, tokens/latency/cost per step and per run
+- [x] **Eval Dashboard** — metrics table with threshold pass/fail, per-field extraction bar chart, cost and latency distribution
+- [x] **Gate: all four screens functional against the real API**
 
 ### Phase 6 — Eval harness
-- [ ] Metric modules, `thresholds.yaml`, response cache, CLI flags
-- [ ] Terminal table plus JSON output plus `EvalRun` persistence
-- [ ] **Confirm cost with you, then run the full eval**
-- [ ] Iterate prompts against results; record the improvement trajectory for the case study
-- [ ] **Gate: eval green against thresholds; real numbers in hand**
+- [x] Metric modules, `thresholds.yaml`, response cache, CLI flags
+- [x] Terminal table plus JSON output plus `EvalRun` persistence
+- [ ] **Run the full eval** — BLOCKED on ANTHROPIC_API_KEY
+- [ ] Iterate prompts against results — BLOCKED, depends on the eval run
+- [ ] **Gate: eval green against thresholds; real numbers in hand** — BLOCKED
 
 ### Phase 7 — Docs and polish
 - [ ] `README.md` — what it is, the customer story, a mermaid architecture diagram, one-command run, **the headline eval number from the harness**, and an honest "what's mocked and how you'd make it real"
