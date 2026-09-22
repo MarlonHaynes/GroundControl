@@ -1,0 +1,72 @@
+# Pinned explicitly: the parent directory name contains spaces and parentheses,
+# which Compose would otherwise fold into a broken project name.
+name: groundcontrol
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-groundcontrol}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-groundcontrol}
+      POSTGRES_DB: ${POSTGRES_DB:-groundcontrol}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-groundcontrol} -d ${POSTGRES_DB:-groundcontrol}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./services/api
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-groundcontrol}:${POSTGRES_PASSWORD:-groundcontrol}@db:5432/${POSTGRES_DB:-groundcontrol}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-claude-sonnet-5}
+      LLM_EFFORT: ${LLM_EFFORT:-medium}
+      LLM_CACHE_ENABLED: ${LLM_CACHE_ENABLED:-1}
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./services/api:/app
+      - api_llm_cache:/app/.llm_cache
+    depends_on:
+      db:
+        condition: service_healthy
+    # Migrations run on boot so a clean clone is one command.
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  web:
+    build:
+      context: ./apps/web
+    environment:
+      # Browser-side: must be reachable from the host, not the compose network.
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  api_llm_cache:
