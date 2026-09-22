@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+.eslintcache
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Eval + cache artifacts
+services/api/evals/results/*.json
+!services/api/evals/results/.gitkeep
+services/api/.llm_cache/
+services/api/evals/.cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Docker
+.docker-data/
