@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from integrations.base import CalendarAdapter, AccountingAdapter, MessagingAdapter
+from integrations.base import AccountingAdapter, CalendarAdapter, MessagingAdapter
 from integrations.mock.messaging import MockMessagingAdapter
 from integrations.mock.stubs import MockAccountingAdapter, MockCalendarAdapter
 

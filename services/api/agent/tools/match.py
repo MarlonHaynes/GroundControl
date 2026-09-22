@@ -24,7 +24,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from db.models import Address, Customer
+from db.models import Customer
 
 W_EMAIL = 0.50
 W_NAME = 0.32

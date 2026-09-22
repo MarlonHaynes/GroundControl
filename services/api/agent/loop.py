@@ -28,8 +28,8 @@ from sqlalchemy.orm import Session
 
 from agent.guardrails import (
     RouteToHuman,
-    evaluate_confidence,
     check_scope,
+    evaluate_confidence,
     verify_contact_grounding,
 )
 from agent.llm import LLMClient

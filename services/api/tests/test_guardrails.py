@@ -21,7 +21,7 @@ from agent.guardrails import (
     verify_draft,
 )
 from agent.registry import FORBIDDEN_TOOL_NAMES, TOOL_NAMES, TOOLS, terminal_tools
-from agent.schemas import ParsedContact, ParsedService
+from agent.schemas import ParsedContact
 from db.models import (
     Approval,
     ApprovalAction,
@@ -41,7 +41,7 @@ class TestRegistryHasNoSendTool:
     """The structural guardrail: the agent has no send capability at all."""
 
     def test_no_forbidden_tool_is_registered(self) -> None:
-        assert TOOL_NAMES & FORBIDDEN_TOOL_NAMES == set()
+        assert set() == TOOL_NAMES & FORBIDDEN_TOOL_NAMES
 
     def test_send_quote_is_not_a_tool(self) -> None:
         assert "send_quote" not in TOOL_NAMES

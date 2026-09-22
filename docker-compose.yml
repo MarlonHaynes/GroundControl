@@ -55,6 +55,9 @@ services:
     environment:
       # Browser-side: must be reachable from the host, not the compose network.
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+      # Server-side rendering runs inside this container, where the API is a
+      # compose service rather than a published port.
+      INTERNAL_API_BASE_URL: http://api:8000
       NODE_ENV: development
       WATCHPACK_POLLING: "true"
     ports:

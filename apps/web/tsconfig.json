@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@groundcontrol/api-types/*": ["../../packages/api-types/*"]
     }
   },
   "include": [

@@ -10,11 +10,8 @@ complete successful run, nothing has been sent and the quote is not approved.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-
 import pytest
 
-from agent.llm import FakeLLMClient
 from agent.loop import run_pipeline
 from agent.schemas import ProposalResult, ProposedLineItemLLM
 from db.models import (

@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from pricing.types import AccessDifficulty, Season, TrunkDiameterBand, TravelZone, Unit, Urgency
+from pricing.types import AccessDifficulty, Season, TravelZone, TrunkDiameterBand, Unit, Urgency
 
 
 @dataclass(frozen=True)

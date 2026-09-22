@@ -108,7 +108,7 @@ class ProposalResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    line_items: list["ProposedLineItemLLM"] = Field(default_factory=list)
+    line_items: list[ProposedLineItemLLM] = Field(default_factory=list)
     unpriceable_reason: str | None = Field(
         default=None,
         description="Set when the request cannot be turned into catalog line items",

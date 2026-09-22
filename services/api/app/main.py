@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.routers import approvals, catalog, job_requests, runs
 
 logging.basicConfig(
     level=settings.log_level,
@@ -34,6 +35,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(job_requests.router)
+app.include_router(approvals.router)
+app.include_router(runs.router)
+app.include_router(catalog.router)
 
 
 @app.get("/health", tags=["meta"])

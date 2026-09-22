@@ -26,7 +26,6 @@ from db.models import (
     Approval,
     ApprovalAction,
     ApprovalStatus,
-    DraftMessage,
     LineItem,
     LineItemSource,
     Quote,

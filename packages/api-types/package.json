@@ -1,0 +1,7 @@
+{
+  "name": "@groundcontrol/api-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript types generated from the FastAPI OpenAPI spec. Do not edit by hand; run `npm run gen:types` in apps/web.",
+  "types": "schema.d.ts"
+}
