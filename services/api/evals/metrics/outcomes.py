@@ -304,17 +304,33 @@ class PerformanceScorer:
     cache_hits: int = 0
     llm_calls: int = 0
 
+    # Cases where no step was served from cache. These are the only runs whose
+    # cost and latency describe what this pipeline actually costs to run. A
+    # cache hit honestly reports zero usage, so averaging over a mostly-cached
+    # eval yields a cost-per-quote that is real arithmetic over unreal inputs —
+    # exactly the kind of number that ends up in a README and is wrong.
+    uncached_costs: list[int] = field(default_factory=list)
+    uncached_tokens_in: list[int] = field(default_factory=list)
+    uncached_tokens_out: list[int] = field(default_factory=list)
+    uncached_latencies: list[int] = field(default_factory=list)
+
     def score_case(self, result: PipelineResult) -> None:
         run = result.run
         self.tokens_in.append(run.usage.input_tokens)
         self.tokens_out.append(run.usage.output_tokens)
         self.costs.append(run.cost_microcents)
         self.latencies.append(run.latency_ms)
-        for step in run.steps:
-            if step.uses_llm:
-                self.llm_calls += 1
-                if step.cache_hit:
-                    self.cache_hits += 1
+
+        llm_steps = [s for s in run.steps if s.uses_llm]
+        self.llm_calls += len(llm_steps)
+        hits = sum(1 for s in llm_steps if s.cache_hit)
+        self.cache_hits += hits
+
+        if llm_steps and hits == 0:
+            self.uncached_costs.append(run.cost_microcents)
+            self.uncached_tokens_in.append(run.usage.input_tokens)
+            self.uncached_tokens_out.append(run.usage.output_tokens)
+            self.uncached_latencies.append(run.latency_ms)
 
     def summary(self) -> dict[str, object]:
         def pct(values: list[int], p: float) -> int:
@@ -323,10 +339,14 @@ class PerformanceScorer:
             ordered = sorted(values)
             return ordered[min(len(ordered) - 1, int(len(ordered) * p))]
 
-        mean_cost = int(statistics.fmean(self.costs)) if self.costs else 0
+        def mean(values: list[int]) -> int:
+            return int(statistics.fmean(values)) if values else 0
+
+        mean_cost = mean(self.costs)
+        uncached_mean = mean(self.uncached_costs)
         return {
-            "mean_tokens_in": int(statistics.fmean(self.tokens_in)) if self.tokens_in else 0,
-            "mean_tokens_out": int(statistics.fmean(self.tokens_out)) if self.tokens_out else 0,
+            "mean_tokens_in": mean(self.tokens_in),
+            "mean_tokens_out": mean(self.tokens_out),
             "mean_cost_microcents": mean_cost,
             "mean_cost_display": fmt_microcents(mean_cost),
             "total_cost_microcents": sum(self.costs),
@@ -336,4 +356,12 @@ class PerformanceScorer:
             "llm_calls": self.llm_calls,
             "cache_hits": self.cache_hits,
             "cache_hit_rate": (self.cache_hits / self.llm_calls) if self.llm_calls else 0.0,
+            # The honest figures — quote these, not the cache-diluted ones.
+            "n_uncached_runs": len(self.uncached_costs),
+            "uncached_mean_cost_microcents": uncached_mean,
+            "uncached_mean_cost_display": fmt_microcents(uncached_mean),
+            "uncached_mean_tokens_in": mean(self.uncached_tokens_in),
+            "uncached_mean_tokens_out": mean(self.uncached_tokens_out),
+            "uncached_p50_latency_ms": pct(self.uncached_latencies, 0.5),
+            "uncached_p95_latency_ms": pct(self.uncached_latencies, 0.95),
         }

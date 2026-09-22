@@ -227,7 +227,10 @@ def run_pipeline(
                 computed=computed,
                 drafted=drafted,
                 to_email=recipient,
-                run_id=tracer.run.run_id,
+                # Only reference the run when its row was actually written.
+                # The eval harness runs with persist_traces=False, and stamping
+                # a run id that no agent_runs row backs violates the FK.
+                run_id=tracer.run.run_id if persist_traces else None,
                 quote_number=quote_number,
             )
             step.set_output(

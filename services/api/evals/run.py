@@ -122,7 +122,15 @@ def run_one(case: EvalCase, client: LLMClient) -> PipelineResult:
         )
         db.add(jr)
         db.flush()
-        return run_pipeline(db, job_request=jr, client=client, persist_traces=False)
+        result = run_pipeline(db, job_request=jr, client=client, persist_traces=False)
+
+        # The scorers read these after this session is gone. Touch them now so
+        # they are loaded rather than lazy, or scoring dies on a
+        # DetachedInstanceError for every case that produced a quote.
+        if result.quote is not None:
+            _ = list(result.quote.draft_messages)
+            _ = list(result.quote.line_items)
+        return result
     finally:
         db.close()
         transaction.rollback()
@@ -317,13 +325,18 @@ def print_report(metrics: dict, rows: list[dict[str, Any]], outcomes: list[CaseO
     perf_table.add_column("Measure")
     perf_table.add_column("Value", justify="right")
     perf_table.add_row("model", model)
-    perf_table.add_row("mean tokens in", f"{perf['mean_tokens_in']:,}")
-    perf_table.add_row("mean tokens out", f"{perf['mean_tokens_out']:,}")
-    perf_table.add_row("cost per quote", perf["mean_cost_display"])
-    perf_table.add_row("total run cost", perf["total_cost_display"])
-    perf_table.add_row("p50 latency", f"{perf['p50_latency_ms']:,} ms")
-    perf_table.add_row("p95 latency", f"{perf['p95_latency_ms']:,} ms")
+    n_unc = perf["n_uncached_runs"]
     perf_table.add_row("cache hit rate", f"{perf['cache_hit_rate']:.0%}")
+    perf_table.add_row("total run cost (actual spend)", perf["total_cost_display"])
+    perf_table.add_section()
+    perf_table.add_row(f"[bold]uncached runs[/] (n={n_unc})", "")
+    perf_table.add_row("  mean tokens in", f"{perf['uncached_mean_tokens_in']:,}")
+    perf_table.add_row("  mean tokens out", f"{perf['uncached_mean_tokens_out']:,}")
+    perf_table.add_row("  [bold]cost per quote[/]", perf["uncached_mean_cost_display"])
+    perf_table.add_row("  p50 latency", f"{perf['uncached_p50_latency_ms']:,} ms")
+    perf_table.add_row("  p95 latency", f"{perf['uncached_p95_latency_ms']:,} ms")
+    if n_unc == 0:
+        perf_table.add_row("[yellow]note[/]", "fully cached run — cost is not meaningful")
     console.print()
     console.print(perf_table)
 

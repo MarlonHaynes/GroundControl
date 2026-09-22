@@ -288,7 +288,7 @@ I also need `ANTHROPIC_API_KEY` in the environment (or an `ant auth login` profi
 
 ### Phase 2 — Synthetic data and seed
 - [x] `GroundTruth` schema plus controlled variation generator
-- [~] `scripts/generate_dataset.py` — written and dry-run verified; the 180 **ground truths** and 40 customers are committed fixtures, but the LLM-rendered **email bodies are not generated** (needs ANTHROPIC_API_KEY)
+- [x] `scripts/generate_dataset.py` — 180 emails generated ($0.75); three label bugs found and fixed via a 5-sample eyeball check before the full spend
 - [x] Hand-author ~15 adversarial cases
 - [x] Commit fixtures; `scripts/seed.py` loads a coherent demo DB state
 - [x] **Gate: `make seed` produces a browsable demo state** (catalog, rules, customers, and the 15 adversarial requests load; the 180 generated requests await rendering)
@@ -320,7 +320,7 @@ I also need `ANTHROPIC_API_KEY` in the environment (or an `ant auth login` profi
 ### Phase 6 — Eval harness
 - [x] Metric modules, `thresholds.yaml`, response cache, CLI flags
 - [x] Terminal table plus JSON output plus `EvalRun` persistence
-- [ ] **Run the full eval** — BLOCKED on ANTHROPIC_API_KEY
+- [x] **Run the full eval** — 195 cases, $3.21 on Sonnet 5; 3 of 6 thresholds met
 - [ ] Iterate prompts against results — BLOCKED, depends on the eval run
 - [ ] **Gate: eval green against thresholds; real numbers in hand** — BLOCKED
 
