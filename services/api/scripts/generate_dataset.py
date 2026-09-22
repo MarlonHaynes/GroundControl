@@ -26,6 +26,7 @@ import json
 import random
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
@@ -38,7 +39,6 @@ from evals.dataset import (
     FixtureCustomer,
     GroundTruth,
     GroundTruthService,
-    write_cases,
 )
 from observability.cost import Usage, cost_microcents, fmt_microcents
 from pricing.catalog_data import CATALOG, CATALOG_BY_CODE
@@ -92,6 +92,14 @@ BUNDLES: list[tuple[str, ...]] = [
     ("HEDGE_TRIM", "MULCH_INSTALL"),
     ("EDGE_TRIM", "WEED_CTRL"),
 ]
+
+# Services whose quantity IS the property's lawn area. SOD_INSTALL is per_sqft
+# too, but its quantity is the size of a patch being re-turfed, which says
+# nothing about the property. Labeling a property size from a sod job produced
+# ground truth no email could support.
+PROPERTY_SIZE_SERVICES = frozenset(
+    {"MOW_STD", "MOW_ROUGH", "LEAF_REMOVAL", "FERT_APP", "WEED_CTRL"}
+)
 
 MESS_PROFILES: list[tuple[str, int]] = [
     ("plain", 14),
@@ -266,10 +274,9 @@ def build_ground_truths(count: int, seed: int = SEED) -> list[GroundTruth]:
         specials = rng.sample(SPECIAL_REQUESTS, k=rng.choice([0, 0, 1, 1, 2]))
         mess = _weighted_choice(rng, MESS_PROFILES)
 
-        # A size-bearing service is needed for the size label to mean anything.
-        size_relevant = any(
-            CATALOG_BY_CODE[s.catalog_code].unit is Unit.PER_SQFT for s in services
-        )
+        # A size label only means something if a service consumes the property
+        # size as its quantity.
+        size_relevant = any(s.catalog_code in PROPERTY_SIZE_SERVICES for s in services)
 
         context = PricingContext(
             urgency=Urgency(urgency),
@@ -352,9 +359,11 @@ MESS_INSTRUCTIONS = {
     "plain": "Clear and well organized. Correct spelling. Gets to the point.",
     "typos": "Several genuine typos and misspellings, a missing apostrophe or two, "
              "maybe a doubled word. Still readable.",
-    "vague_size": "The customer gives NO precise measurement. They describe size "
-                  "loosely: 'a decent sized yard', 'about half an acre I think', "
-                  "'the big field out back'. Do not state square footage.",
+    "vague_size": "The customer gives NO square-foot figure. They describe the area "
+                  "loosely — 'about half an acre I think', 'a bit under an acre', "
+                  "'a decent sized yard'. Use the SIZE GUIDANCE below so the vague "
+                  "phrasing still describes the real area: a reader converting it "
+                  "should land near the true number.",
     "rambling": "Polite and chatty. Two or three sentences of small talk or "
                 "backstory before and after the actual request.",
     "forwarded_thread": "Formatted as a forwarded or replied-to email thread, with "
@@ -364,10 +373,63 @@ MESS_INSTRUCTIONS = {
                     "abbreviations. Possibly a 'Sent from my iPhone' sign-off.",
     "all_caps": "MOSTLY IN CAPITAL LETTERS, as an older customer with caps lock on. "
                 "Still polite.",
-    "partial_info": "The customer omits something important — no address, or no "
-                    "indication of size, or no contact detail beyond the email itself. "
-                    "They assume the company already knows.",
+    "partial_info": "The customer omits their address, or any contact detail beyond "
+                    "the email itself, assuming the company already has it on file. "
+                    "They still describe the work and its size — it is the "
+                    "identifying detail they leave out, not the job.",
 }
+
+
+SQFT_PER_ACRE = 43_560
+
+# Colloquial areas a customer would actually say, with what each one literally
+# means. The descriptor has to be vague AND accurate: a reader converting
+# "roughly a quarter acre" lands on 10,890 sq ft, so using that phrase for a
+# 14,000 sq ft lawn bakes a 22% error into the label — wider than the 15%
+# tolerance the extraction metric allows, which would score correct
+# extractions as failures.
+_NATURAL_ACREAGES: tuple[tuple[float, str], ...] = (
+    (0.125, "about an eighth of an acre"),
+    (0.25, "about a quarter acre"),
+    (0.333, "about a third of an acre"),
+    (0.5, "about half an acre"),
+    (0.667, "about two thirds of an acre"),
+    (0.75, "about three quarters of an acre"),
+    (1.0, "about an acre"),
+    (1.25, "about an acre and a quarter"),
+    (1.5, "about an acre and a half"),
+    (2.0, "about two acres"),
+)
+
+# How far a colloquial phrase may sit from the truth before we prefer a plain
+# decimal. Well inside the metric's 15% tolerance, leaving room for the
+# model's own conversion error.
+_DESCRIPTOR_TOLERANCE = 0.08
+
+
+def _vague_size_hint(sqft: int | None) -> str:
+    """Give the renderer an accurate way to be vague.
+
+    Left to itself the model invents a descriptor that may be nowhere near the
+    labeled size, and the extraction metric then measures the generator's
+    imprecision rather than the pipeline's.
+    """
+    if not sqft:
+        return ""
+
+    acres = sqft / SQFT_PER_ACRE
+    value, phrase = min(_NATURAL_ACREAGES, key=lambda p: abs(p[0] - acres) / acres)
+
+    if abs(value - acres) / acres > _DESCRIPTOR_TOLERANCE:
+        # No colloquial phrase is close enough; a decimal acreage is still
+        # vague to a customer's ear and stays accurate.
+        phrase = f"about {acres:.1f} acres" if acres >= 1 else f"about {acres:.2f} acres"
+
+    return (
+        f"\nSIZE GUIDANCE: the true area is {sqft:,} sq ft (~{acres:.2f} acres). "
+        f"Describe it as {phrase}, or in equivalent loose terms. Never write a "
+        f"square-foot number, and never describe an area of a different size."
+    )
 
 
 def _render_prompt(gt: GroundTruth) -> str:
@@ -400,6 +462,10 @@ def _render_prompt(gt: GroundTruth) -> str:
                                     "grade, no truck access, everything hand-carried.",
     }[gt.access_difficulty]
 
+    size_hint = (
+        _vague_size_hint(gt.property_size_sqft) if gt.mess_profile == "vague_size" else ""
+    )
+
     specials = (
         "\n".join(f"- {s}" for s in gt.special_requests)
         if gt.special_requests
@@ -424,7 +490,7 @@ SPECIAL REQUESTS they should mention:
 {specials}
 
 MESS PROFILE — {gt.mess_profile}:
-{MESS_INSTRUCTIONS[gt.mess_profile]}
+{MESS_INSTRUCTIONS[gt.mess_profile]}{size_hint}
 
 Write the subject line and the body.
 """
@@ -435,32 +501,60 @@ def render_emails(
     client: LLMClient,
     *,
     verbose: bool = True,
+    stream_to: Path | None = None,
 ) -> tuple[list[EvalCase], Usage]:
+    """Render an email per ground truth.
+
+    Each case is appended to `stream_to` as it completes rather than held until
+    the end. A 17-minute render that writes nothing until the final case is
+    all-or-nothing: a crash at case 179 loses everything, and from the outside
+    a working run is indistinguishable from a hung one. The LLM cache makes a
+    resumed run nearly free, but only if the partial output survived.
+
+    Progress is flushed explicitly because stdout is block-buffered when this
+    runs under `docker compose exec`, which is why a healthy run looks silent.
+    """
     cases: list[EvalCase] = []
     total = Usage()
     base_time = datetime(2026, 9, 1, 8, 0, tzinfo=UTC)
 
-    for i, gt in enumerate(truths):
-        result = client.structured(
-            system=RENDER_SYSTEM,
-            prompt=_render_prompt(gt),
-            schema=RenderedEmail,
-            temperature_key=gt.case_id,  # keeps cache entries distinct per case
-        )
-        total = total + result.usage
-        email: RenderedEmail = result.parsed  # type: ignore[assignment]
+    handle = None
+    if stream_to is not None:
+        stream_to.parent.mkdir(parents=True, exist_ok=True)
+        handle = stream_to.open("w", encoding="utf-8")
 
-        cases.append(
-            EvalCase(
+    try:
+        for i, gt in enumerate(truths):
+            result = client.structured(
+                system=RENDER_SYSTEM,
+                prompt=_render_prompt(gt),
+                schema=RenderedEmail,
+                temperature_key=gt.case_id,  # keeps cache entries distinct per case
+            )
+            total = total + result.usage
+            email: RenderedEmail = result.parsed  # type: ignore[assignment]
+
+            case = EvalCase(
                 ground_truth=gt,
                 email_subject=email.subject,
                 email_body=email.body,
                 sender_email=gt.customer_email,
                 received_at=(base_time + timedelta(hours=i * 3)).isoformat(),
             )
-        )
-        if verbose and (i + 1) % 10 == 0:
-            print(f"  rendered {i + 1}/{len(truths)}")
+            cases.append(case)
+
+            if handle is not None:
+                handle.write(case.model_dump_json() + "\n")
+                handle.flush()
+
+            done = i + 1
+            if verbose and (done % 20 == 0 or done == len(truths)):
+                cached = getattr(client, "hits", None)
+                suffix = f" ({cached} from cache)" if cached else ""
+                print(f"  rendered {done}/{len(truths)}{suffix}", flush=True)
+    finally:
+        if handle is not None:
+            handle.close()
 
     return cases, total
 
@@ -553,9 +647,11 @@ def main() -> None:
         return
 
     print(f"\nRendering {len(truths)} emails via the LLM...")
+    print(f"  streaming to {CASES_PATH.name} as each case completes")
     client = build_llm_client()
-    cases, usage = render_emails(truths, client)
-    write_cases(cases, CASES_PATH)
+    # render_emails writes each case as it lands; no separate write_cases call,
+    # so an interrupted run leaves a usable partial dataset behind.
+    cases, usage = render_emails(truths, client, stream_to=CASES_PATH)
 
     model = getattr(client, "model", "unknown")
     spend = cost_microcents(model, usage)
