@@ -10,12 +10,10 @@ how `make test` can verify the eval pipeline without spending anything.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-
 import pytest
 
 from agent.schemas import JobRequestParsed, ParsedContact, ParsedService
-from evals.dataset import EvalCase, GroundTruth, GroundTruthService, load_cases
+from evals.dataset import GroundTruth, GroundTruthService, load_cases
 from evals.metrics.extraction import ExtractionScorer, _norm_address
 from evals.metrics.outcomes import (
     CustomerMatchScorer,

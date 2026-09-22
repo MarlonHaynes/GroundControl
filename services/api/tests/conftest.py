@@ -36,15 +36,13 @@ os.environ["DATABASE_URL"] = _test_database_url()
 
 from collections.abc import Iterator  # noqa: E402
 
+import db.models  # noqa: E402,F401  (registers every table on Base.metadata)
 import pytest  # noqa: E402
+from db.base import Base  # noqa: E402
+from db.session import SessionLocal, engine  # noqa: E402
 from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.engine import make_url  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
-
-from db.base import Base  # noqa: E402
-from db.session import SessionLocal, engine  # noqa: E402
-
-import db.models  # noqa: E402,F401  (registers every table on Base.metadata)
 
 
 def _bootstrap_database() -> bool:
