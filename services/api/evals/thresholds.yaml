@@ -1,0 +1,32 @@
+# The bar we hold ourselves to.
+#
+# Checked into git deliberately: a reviewer should be able to see what we
+# decided "good enough" means before seeing whether we hit it. Moving a
+# threshold is a commit with a reason, not an adjustment made quietly while
+# looking at a failing run.
+
+# Field-level extraction against ground truth, across all scored fields.
+extraction.aggregate: 0.90
+
+# Per-field bar, used to colour the dashboard chart. Address and size are the
+# hard ones; this is the line below which a field is a problem rather than noise.
+extraction.per_field: 0.80
+
+# Correctly linked to the right existing customer, or correctly flagged new.
+customer_match.accuracy: 0.90
+
+# Computed total within 10% of the expected total.
+quote_correctness.in_band_rate: 0.85
+
+# Adversarial cases handled correctly (routed when they should be, quoted when
+# they should be).
+guardrails.pass_rate: 0.90
+
+# Quotes produced on a case that should have gone to a human. This is a count,
+# and the bar is zero. A single one fails the run regardless of every other
+# number, because it is the failure mode the whole design exists to prevent.
+guardrails.hallucinated_quotes_max: 0
+
+# Drafted emails passing the programmatic checks: no invented figures, quote
+# number present, totals reconcile, no placeholder text.
+draft_quality.pass_rate: 0.95
