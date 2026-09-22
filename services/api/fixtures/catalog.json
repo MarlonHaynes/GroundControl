@@ -1,0 +1,327 @@
+{
+  "services": [
+    {
+      "code": "MOW_STD",
+      "name": "Lawn Mowing (Standard)",
+      "service_type": "maintenance",
+      "unit": "per_sqft",
+      "base_rate_cents": "1.2",
+      "min_charge_cents": 6500,
+      "description": "Routine mow, blow and go on maintained turf.",
+      "labor_sensitive": true,
+      "keywords": [
+        "mow",
+        "mowing",
+        "cut the grass",
+        "lawn cut",
+        "grass cut"
+      ]
+    },
+    {
+      "code": "MOW_ROUGH",
+      "name": "Rough / Overgrown Cut",
+      "service_type": "maintenance",
+      "unit": "per_sqft",
+      "base_rate_cents": "2.8",
+      "min_charge_cents": 14500,
+      "description": "First cut on overgrown or neglected turf; brush-hog or high-deck pass.",
+      "labor_sensitive": true,
+      "keywords": [
+        "overgrown",
+        "knee high",
+        "hasn't been cut",
+        "jungle",
+        "waist high"
+      ]
+    },
+    {
+      "code": "EDGE_TRIM",
+      "name": "Edging & String Trimming",
+      "service_type": "maintenance",
+      "unit": "per_hour",
+      "base_rate_cents": "5800",
+      "min_charge_cents": 5800,
+      "description": "Hard-edge walkways and beds, string trim fence lines and obstacles.",
+      "labor_sensitive": true,
+      "keywords": [
+        "edging",
+        "edge",
+        "string trim",
+        "weed whack",
+        "weedwacking"
+      ]
+    },
+    {
+      "code": "HEDGE_TRIM",
+      "name": "Hedge & Shrub Trimming",
+      "service_type": "maintenance",
+      "unit": "per_unit",
+      "base_rate_cents": "1800",
+      "min_charge_cents": 9500,
+      "description": "Shape and reduce hedges and ornamental shrubs. Priced per shrub.",
+      "labor_sensitive": true,
+      "keywords": [
+        "hedge",
+        "hedges",
+        "shrub",
+        "bushes",
+        "boxwood",
+        "privet"
+      ]
+    },
+    {
+      "code": "FERT_APP",
+      "name": "Fertilizer Application",
+      "service_type": "turf_care",
+      "unit": "per_sqft",
+      "base_rate_cents": "0.9",
+      "min_charge_cents": 8500,
+      "description": "Granular fertilizer application, single round.",
+      "labor_sensitive": false,
+      "keywords": [
+        "fertilize",
+        "fertilizer",
+        "feed the lawn",
+        "turf food"
+      ]
+    },
+    {
+      "code": "WEED_CTRL",
+      "name": "Weed Control Treatment",
+      "service_type": "turf_care",
+      "unit": "per_sqft",
+      "base_rate_cents": "0.7",
+      "min_charge_cents": 7500,
+      "description": "Broadleaf weed control, single application.",
+      "labor_sensitive": false,
+      "keywords": [
+        "weeds",
+        "weed control",
+        "dandelions",
+        "crabgrass"
+      ]
+    },
+    {
+      "code": "LEAF_REMOVAL",
+      "name": "Leaf Removal",
+      "service_type": "cleanup",
+      "unit": "per_sqft",
+      "base_rate_cents": "1.5",
+      "min_charge_cents": 12000,
+      "description": "Blow, collect and remove leaf litter from turf and beds.",
+      "labor_sensitive": true,
+      "keywords": [
+        "leaves",
+        "leaf removal",
+        "leaf cleanup",
+        "fall leaves"
+      ]
+    },
+    {
+      "code": "PROPERTY_CLEANUP",
+      "name": "Spring / Fall Property Cleanup",
+      "service_type": "cleanup",
+      "unit": "per_hour",
+      "base_rate_cents": "6200",
+      "min_charge_cents": 18600,
+      "description": "Full property cleanup: beds, borders, winter debris, cutbacks.",
+      "labor_sensitive": true,
+      "keywords": [
+        "spring cleanup",
+        "fall cleanup",
+        "clean up the yard",
+        "tidy up"
+      ]
+    },
+    {
+      "code": "DEBRIS_HAUL",
+      "name": "Debris Hauling & Disposal",
+      "service_type": "cleanup",
+      "unit": "per_unit",
+      "base_rate_cents": "4200",
+      "min_charge_cents": 4200,
+      "description": "Load and dispose of green waste. Priced per cubic yard.",
+      "labor_sensitive": true,
+      "keywords": [
+        "haul away",
+        "dispose",
+        "take it away",
+        "debris",
+        "dump"
+      ]
+    },
+    {
+      "code": "TREE_TRIM",
+      "name": "Tree Trimming / Pruning",
+      "service_type": "tree_work",
+      "unit": "per_unit",
+      "base_rate_cents": "18500",
+      "min_charge_cents": 18500,
+      "description": "Crown cleaning and deadwood removal. Priced per tree.",
+      "labor_sensitive": true,
+      "keywords": [
+        "trim the tree",
+        "prune",
+        "pruning",
+        "tree trimming",
+        "limbs"
+      ]
+    },
+    {
+      "code": "TREE_REMOVAL",
+      "name": "Tree Removal",
+      "service_type": "tree_work",
+      "unit": "per_unit",
+      "base_rate_cents": "65000",
+      "min_charge_cents": 65000,
+      "description": "Full tree takedown. Surcharged by trunk diameter band.",
+      "labor_sensitive": true,
+      "keywords": [
+        "remove the tree",
+        "take down",
+        "cut down the tree",
+        "tree removal"
+      ]
+    },
+    {
+      "code": "STUMP_GRIND",
+      "name": "Stump Grinding",
+      "service_type": "tree_work",
+      "unit": "per_unit",
+      "base_rate_cents": "14500",
+      "min_charge_cents": 14500,
+      "description": "Grind stump to 6 inches below grade. Priced per stump.",
+      "labor_sensitive": true,
+      "keywords": [
+        "stump",
+        "grind",
+        "stump removal"
+      ]
+    },
+    {
+      "code": "MULCH_INSTALL",
+      "name": "Mulch Installation",
+      "service_type": "installation",
+      "unit": "per_unit",
+      "base_rate_cents": "9500",
+      "min_charge_cents": 19000,
+      "description": "Supply and install hardwood mulch. Priced per cubic yard.",
+      "labor_sensitive": true,
+      "keywords": [
+        "mulch",
+        "mulching",
+        "bark",
+        "beds refreshed"
+      ]
+    },
+    {
+      "code": "SOD_INSTALL",
+      "name": "Sod Installation",
+      "service_type": "installation",
+      "unit": "per_sqft",
+      "base_rate_cents": "185",
+      "min_charge_cents": 45000,
+      "description": "Grade, prep and lay sod including delivery.",
+      "labor_sensitive": true,
+      "keywords": [
+        "sod",
+        "new lawn",
+        "turf install",
+        "re-sod"
+      ]
+    },
+    {
+      "code": "IRRIGATION_REPAIR",
+      "name": "Irrigation System Repair",
+      "service_type": "irrigation",
+      "unit": "per_hour",
+      "base_rate_cents": "8800",
+      "min_charge_cents": 13200,
+      "description": "Diagnose and repair heads, valves, and controller faults.",
+      "labor_sensitive": true,
+      "keywords": [
+        "sprinkler",
+        "irrigation",
+        "zone not working",
+        "head broken"
+      ]
+    },
+    {
+      "code": "IRRIGATION_WINTERIZE",
+      "name": "Irrigation Winterization",
+      "service_type": "irrigation",
+      "unit": "flat",
+      "base_rate_cents": "12500",
+      "min_charge_cents": 12500,
+      "description": "Blow out irrigation lines for winter. Flat rate per system.",
+      "labor_sensitive": false,
+      "keywords": [
+        "winterize",
+        "blow out",
+        "blowout",
+        "shut down the sprinklers"
+      ]
+    },
+    {
+      "code": "SNOW_REMOVAL",
+      "name": "Snow Removal (Per Visit)",
+      "service_type": "seasonal",
+      "unit": "per_hour",
+      "base_rate_cents": "9500",
+      "min_charge_cents": 14250,
+      "description": "Plow and shovel service, billed per crew hour on site.",
+      "labor_sensitive": true,
+      "keywords": [
+        "snow",
+        "plow",
+        "plowing",
+        "shovel"
+      ]
+    },
+    {
+      "code": "GUTTER_CLEAN",
+      "name": "Gutter Cleaning",
+      "service_type": "cleanup",
+      "unit": "per_unit",
+      "base_rate_cents": "325",
+      "min_charge_cents": 14500,
+      "description": "Clear gutters and downspouts. Priced per linear foot.",
+      "labor_sensitive": true,
+      "keywords": [
+        "gutter",
+        "gutters",
+        "downspout"
+      ]
+    }
+  ],
+  "rules": {
+    "tree_removal_surcharge_cents": {
+      "under_12in": 0,
+      "12_24in": 27500,
+      "24_36in": 65000,
+      "over_36in": 115000
+    },
+    "access_multiplier": {
+      "easy": "1.00",
+      "moderate": "1.15",
+      "difficult": "1.35"
+    },
+    "urgency_multiplier": {
+      "standard": "1.00",
+      "urgent": "1.20",
+      "emergency": "1.35"
+    },
+    "season_multiplier": {
+      "peak": "1.08",
+      "shoulder": "1.00",
+      "off_peak": "0.92"
+    },
+    "travel_surcharge_cents": {
+      "zone_1": 0,
+      "zone_2": 4500,
+      "zone_3": 11000
+    },
+    "global_job_minimum_cents": 12500,
+    "tax_rate": "0.0635"
+  }
+}
